@@ -9,6 +9,14 @@
 #define INITIAL_SIZE 10
 #define TOKEN_DELIMITER " \t\n"
 
+int changeDirectory(char* path) {
+    if (chdir(path) == -1) {
+        perror("cd");
+        return -1;
+    }
+    return 0;
+}
+
 void Tokenize(char* inputString, char*** outputArray, int* numTokens) {
     const char* delimiter = TOKEN_DELIMITER;
     char* token = strtok(inputString, delimiter);
@@ -23,16 +31,15 @@ void Tokenize(char* inputString, char*** outputArray, int* numTokens) {
             (*outputArray)[*numTokens - 1] = strdup(token);
         } else if (token[0] == '"' && token[strlen(token) - 1] == '"') {
             int len = strlen(token);
-            token[len - 1] = '\0'; // Remove the last double quote
+            token[len - 1] = '\0';
             (*numTokens)++;
             *outputArray = realloc(*outputArray, sizeof(char*) * (*numTokens));
             if (*outputArray == NULL) {
                 fprintf(stderr, "Memory allocation failed!\n");
                 exit(EXIT_FAILURE);
             }
-            (*outputArray)[*numTokens - 1] = strdup(&token[1]); // Skip the first double quote
+            (*outputArray)[*numTokens - 1] = strdup(&token[1]);
         } else {
-            // Split other tokens using the regular delimiter
             (*numTokens)++;
             *outputArray = realloc(*outputArray, sizeof(char*) * (*numTokens));
             if (*outputArray == NULL) {
@@ -70,7 +77,6 @@ void executeCommand(char** tokens, int numTokens) {
     }
 
     if (hasPipe) {
-        // Handle commands with pipe
         char** firstCommand = tokens;
         char** secondCommand = &tokens[pipeIndex + 1];
         tokens[pipeIndex] = NULL;
@@ -90,7 +96,6 @@ void executeCommand(char** tokens, int numTokens) {
                 exit(EXIT_FAILURE);
             }
         } else if (pid1 > 0) {
-            // Parent process
             pid_t pid2 = fork();
             if (pid2 == 0) {
                 close(pipefd[1]);
@@ -101,10 +106,8 @@ void executeCommand(char** tokens, int numTokens) {
                     exit(EXIT_FAILURE);
                 }
             } else if (pid2 > 0) {
-                // Parent process
                 close(pipefd[0]);
                 close(pipefd[1]);
-                // Wait for both child processes to finish
                 waitpid(pid1, NULL, 0);
                 waitpid(pid2, NULL, 0);
             } else {
@@ -131,7 +134,6 @@ void executeCommand(char** tokens, int numTokens) {
                 exit(EXIT_FAILURE);
             }
         } else if (pid > 0) {
-            // Parent process
             close(outputFd);
             waitpid(pid, NULL, 0);
         } else {
@@ -141,13 +143,11 @@ void executeCommand(char** tokens, int numTokens) {
     } else {
         pid_t pid = fork();
         if (pid == 0) {
-            // Child process
             if (execvp(tokens[0], tokens) == -1) {
                 perror("Execvp failed");
                 exit(EXIT_FAILURE);
             }
         } else if (pid > 0) {
-            // Parent process
             int status;
             waitpid(pid, &status, 0);
         } else {
@@ -171,6 +171,20 @@ int main() {
             if (strcmp(Tokens[0], "exit") == 0 || strcmp(Tokens[0], "quit") == 0) {
                 printf("Exiting Ash\n");
                 exit(EXIT_SUCCESS);
+            } else if (strcmp(Tokens[0], "cd") == 0) {
+                if (ElemCnt < 2) {
+                    fprintf(stderr, "cd: Missing argument\n");
+                } else {
+                    if (changeDirectory(Tokens[1]) == 0) {
+                        char buffer[4096];
+                        if (getcwd(buffer, sizeof(buffer)) != NULL) {
+                            setenv("PWD", buffer, 1);
+                        } else {
+                            perror("getcwd");
+                        }
+                    }
+                }
+
             } else {
                 executeCommand(Tokens, ElemCnt);
             }
