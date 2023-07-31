@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define INITIAL_SIZE 10
 #define TOKEN_DELIMITER " \t\n"
@@ -23,6 +25,25 @@ void Tokenize(char* inputString, char*** outputArray, int* numTokens) {
     }
 }
 
+void executeCommand(char** tokens) {
+    pid_t pid = fork();
+    
+    if (pid < 0) {
+        // Fork failed
+        perror("Fork failed");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+        // Child process
+        if (execvp(tokens[0], tokens) == -1) {
+            perror("Execvp failed");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        int status;
+        waitpid(pid, &status, 0);
+    }
+}
+
 int main() {
     while (1) {
         char buffer[4096];
@@ -34,7 +55,7 @@ int main() {
         scanf("%m[^\n]", &input);
         printf("%s\n", input);
         Tokenize(input, &Tokens, &ElemCnt);
-        //handle commands here
+        executeCommand(Tokens);
         free(Tokens);
         Tokens = NULL;
         int c;
