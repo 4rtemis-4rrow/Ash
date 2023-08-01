@@ -1,7 +1,6 @@
 # Ash
 Ash (pronounced as the word ash, short for arrow shell) is a simple lightweight linux shell written in C
-
-I wrote this for the sake of practice, I don't recommend using it, though it is reliable, maybe if you are looking for something super light weight, go for it, besides that, just use zsh, zsh is great
+right now it's not yet ready for daily use, although if you are looking for something super lightweight but isn't /bin/sh, this is perfect for you
 
 # Known Bugs
 output redirection failed the only test I tried
