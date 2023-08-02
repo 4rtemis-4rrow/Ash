@@ -15,6 +15,8 @@ right now it's not yet ready for daily use, although if you are looking for some
    
      I failed to trace it back using gdb, I am still trying to find it's source, but this is more advanced than my current skillset would allow
 
+      after some tinkering with gdb, I managed to trace back the segfault to the FindMathces function, specifically in line 168, as of writing this, I need to go do something, I shall continue debugging when I'm free
+
 # Planned Features
 1. tab autocompletions (work in progress)
    pressing tab the first time should display possible completions, for paths it should provide the list of paths from the contents of the current directory, for the commands, it should provide them from places where binaries are usually stored, like /bin directory contents, subsequent tab precess should cycle between the possible completions, all my tests failed, resulting in segfaults that I couldn't trace back or fix, or they didn't work as intended at all, though one test worked perfectly for commands, segfaulted for paths, but I sorta accidentally deleted that one
