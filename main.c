@@ -5,7 +5,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <readline/readline.h>>
+#include <readline/readline.h>
+#include <dirent.h>
 
 #define INITIAL_SIZE 10
 #define TOKEN_DELIMITER " \t\n"
@@ -158,7 +159,108 @@ void executeCommand(char** tokens, int numTokens) {
     }
 }
 
+void FindMatches(const char* Substring, const char** Entries, char*** Results, int* Size) {
+    int InitSize = 10;
+    int CurrentSize = 0;
+    *Results = (char**)malloc(InitSize * sizeof(char*));
+
+    for (int i = 0; Entries[i] != NULL; i++) {
+        if (strstr(Entries[i], Substring) != NULL) {
+            if (CurrentSize >= InitSize) {
+                InitSize *= 2;
+                *Results = (char**)realloc(*Results, InitSize * sizeof(char*));
+            }
+            (*Results)[CurrentSize] = strdup(Entries[i]);
+            CurrentSize++;
+        }
+    }
+
+    *Size = CurrentSize;
+}
+
+void ReadDirectory(const char* directory, char*** filenames, size_t* size) {
+    DIR *dir;
+    struct dirent *entry;
+    size_t capacity = 10;
+    size_t count = 0;
+
+    dir = opendir(directory);
+    if (!dir) {
+        fprintf(stderr, "Error opening Directory: %s\n", directory);
+        return;
+    }
+    char** names = (char**)malloc(capacity * sizeof(char*));
+    if (!names) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            names[count] = (char*)malloc(strlen(entry->d_name) + 1);
+            if (!names[count]) {
+                fprintf(stderr, "Memory allocation failed\n");
+                for (size_t i = 0; i < count; i++) {
+                    free(names[i]);
+                }
+                free(names);
+                closedir(dir);
+                return;
+            }
+            strcpy(names[count], entry->d_name);
+            count++;
+            if (count == capacity) {
+                capacity *=2;
+                char** temp = (char**)realloc(names, capacity * sizeof(char*));
+                if (!temp) {
+                    fprintf(stderr, "Memory reallocation failed\n");
+                    for (size_t i = 0; i < count; i++) {
+                        free(names[i]);
+                    }
+                    free(names);
+                    closedir(dir);
+                    return;
+                }
+                names = temp;
+            }
+        }
+    }
+    closedir(dir);
+    *filenames = names;
+    *size = count;
+}
+
+char** Autocomplete(const char* text, int start, int end) {
+    (void)start;
+    (void)end;
+    rl_attempted_completion_over = 1;
+    char** Tokens = NULL;
+    int ElemCnt = 0;
+    int LastPipe = 0;
+    Tokenize(text, &Tokens, &ElemCnt);
+    for (int i = 0; i < ElemCnt; i++) {
+        if (strcmp(Tokens[i], "|") == 0) {
+            LastPipe = i;
+        }
+    }
+    const char* directory;
+    if (ElemCnt == LastPipe + 1) {
+        //this will be commands, otherwise it'd be paths
+        directory = "/bin";
+    } else {
+        directory = ".";
+    }
+    char** Files;
+    size_t FileCnt;
+    ReadDirectory(directory, &Files, &FileCnt);
+    char** Results;
+    int Size;
+    FindMatches(Tokens[ElemCnt-1], (const char**)Files, &Results, &Size);
+    return Results;
+}
+
 int main() {
+    rl_attempted_completion_function = Autocomplete;
     while (1) {
         char buffer[4096];
         char** Tokens = NULL;
