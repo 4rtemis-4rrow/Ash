@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <readline/readline.h>>
 
 #define INITIAL_SIZE 10
 #define TOKEN_DELIMITER " \t\n"
@@ -160,12 +161,11 @@ void executeCommand(char** tokens, int numTokens) {
 int main() {
     while (1) {
         char buffer[4096];
-        char* input = NULL;
         char** Tokens = NULL;
         int ElemCnt = 0;
         char* cwd = getcwd(buffer, sizeof(buffer));
-        printf("%s@Ash:%s$ ", getlogin(), cwd);
-        scanf("%m[^\n]", &input);
+        printf("%s@Ash:%s$\n", getlogin(), cwd);
+        char *input = readline(">>> ");
         Tokenize(input, &Tokens, &ElemCnt);
         if (ElemCnt > 0) {
             if (strcmp(Tokens[0], "exit") == 0 || strcmp(Tokens[0], "quit") == 0) {
@@ -191,8 +191,6 @@ int main() {
         }
         free(Tokens);
         Tokens = NULL;
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF) {}
         free(input);
     }
     return 0;
