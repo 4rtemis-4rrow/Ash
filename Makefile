@@ -1,11 +1,7 @@
-# Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Wextra -O3 -march=native
-
-# Libraries
+CFLAGS := -Wall -Wextra -O3 -march=native -g
 LIBS := -lreadline
 
-# Source files and output executable
 SRC := main.c
 OUT := Ash
 
