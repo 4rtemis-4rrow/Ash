@@ -4,10 +4,12 @@ right now it's not yet ready for daily use, although if you are looking for some
 
 # Known Bugs
 1. output redirection failed the only test I tried
+   
     test command: `echo "is this working?" > test.txt`
     expected result: file `test.txt` be created and it's contents be `this is working`
     actual result: file `test.txt` was created and it's contentes were `"this is working" > test.txt`
-2. SEGFAULT when pressing tab for completions
+3. SEGFAULT when pressing tab for completions
+   
      I failed to trace it back using gdb, I am still trying to find it's source, but this is more advanced than my current skillset would allow
 
 # Planned Features
