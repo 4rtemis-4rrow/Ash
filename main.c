@@ -165,9 +165,8 @@ void FindMatches(const char* Substring, const char** Entries, int EntCnt,char***
     int InitSize = 10;
     int CurrentSize = 0;
     *Results = (char**)malloc(InitSize * sizeof(char*));
-    for (int i = 0; i <= EntCnt; i++) {
-        printf("%d", i);
-        if (strstr(Entries[i], Substring) != NULL) {
+    for (int i = 0; i < EntCnt; i++) {
+        if (strncmp(Entries[i], Substring, strlen(Substring)) == 0) {
             if (CurrentSize >= InitSize) {
                 InitSize *= 2;
                 *Results = (char**)realloc(*Results, InitSize * sizeof(char*));
