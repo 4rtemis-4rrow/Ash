@@ -6,10 +6,12 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <readline/readline.h>
+#include <readline/history.h>
 #include <dirent.h>
 
 #define INITIAL_SIZE 10
-#define TOKEN_DELIMITER " \t\n"
+#define TOKEN_DELIMITER " \n"
+
 
 int changeDirectory(char* path) {
     if (chdir(path) == -1) {
@@ -159,12 +161,12 @@ void executeCommand(char** tokens, int numTokens) {
     }
 }
 
-void FindMatches(const char* Substring, const char** Entries, char*** Results, int* Size) {
+void FindMatches(const char* Substring, const char** Entries, int EntCnt,char*** Results, int* Size) {
     int InitSize = 10;
     int CurrentSize = 0;
     *Results = (char**)malloc(InitSize * sizeof(char*));
-
-    for (int i = 0; Entries[i] != NULL; i++) {
+    for (int i = 0; i <= EntCnt; i++) {
+        printf("%d", i);
         if (strstr(Entries[i], Substring) != NULL) {
             if (CurrentSize >= InitSize) {
                 InitSize *= 2;
@@ -225,19 +227,24 @@ void ReadDirectory(const char* directory, char*** filenames, size_t* size) {
             }
         }
     }
+    if (count < capacity) {
+        names[count] = NULL;
+    }
     closedir(dir);
     *filenames = names;
     *size = count;
 }
 
-char** Autocomplete(const char* text, int start, int end) {
+char** Autocomplete(const char* input, int start, int end) {
+    (void)input;
     (void)start;
     (void)end;
     rl_attempted_completion_over = 1;
+    const char* text = rl_line_buffer;
     char** Tokens = NULL;
     int ElemCnt = 0;
     int LastPipe = 0;
-    Tokenize(text, &Tokens, &ElemCnt);
+    Tokenize((char*)text, &Tokens, &ElemCnt);
     for (int i = 0; i < ElemCnt; i++) {
         if (strcmp(Tokens[i], "|") == 0) {
             LastPipe = i;
@@ -255,7 +262,7 @@ char** Autocomplete(const char* text, int start, int end) {
     ReadDirectory(directory, &Files, &FileCnt);
     char** Results;
     int Size;
-    FindMatches(Tokens[ElemCnt-1], (const char**)Files, &Results, &Size);
+    FindMatches(Tokens[ElemCnt-1], (const char**)Files, FileCnt,&Results, &Size);
     return Results;
 }
 
