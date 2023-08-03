@@ -15,11 +15,25 @@ NOTE: pretty much everything that follows is logs of what I'm working on/what I 
    
 3. SEGFAULT when pressing tab for completions
    
-     I failed to trace it back using gdb, I am still trying to find it's source, but this is more advanced than my current skillset would allow
+      backtracing it using GDB indicates that the issue isn't in my code, but rather the readline library, here is the output of backtrace in case it helps anyone
 
-      after some tinkering with gdb, I managed to trace back the segfault to the FindMathces function, specifically in line 168, as of writing this, I need to go do something, I shall continue debugging when I'm free
-
-      I did find a bug in the implementation of the autocompletion, however it wasn't related to the segfault, the segfault is happening at the call of strstr, I checked that it's arguments were indeed of the correct type, and that they were null terminated
+```
+(gdb) backtrace
+#0  0x00007ffff7ec7ffb in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7d906c6 in ?? () from /usr/lib/libc.so.6
+#2  0x00007ffff7d90621 in ?? () from /usr/lib/libc.so.6
+#3  0x00007ffff7d90b66 in qsort_r () from /usr/lib/libc.so.6
+#4  0x00007ffff7f55ee9 in remove_duplicate_matches (matches=<optimized out>) at ../complete.c:1270
+#5  postprocess_matches (matchesp=matchesp@entry=0x7fffffffb700, matching_filenames=0) at ../complete.c:1471
+#6  0x00007ffff7f5fd41 in rl_complete_internal (what_to_do=9) at ../complete.c:2057
+#7  0x00007ffff7f57430 in _rl_dispatch_subseq (key=9, map=<optimized out>, got_subseq=0) at ../readline.c:916
+#8  0x00007ffff7f579c6 in _rl_dispatch (key=<optimized out>, map=<optimized out>) at ../readline.c:860
+#9  0x00007ffff7f58248 in readline_internal_char () at ../readline.c:675
+#10 0x00007ffff7f6154e in readline_internal_charloop () at ../readline.c:721
+#11 readline_internal () at ../readline.c:733
+#12 readline (prompt=prompt@entry=0x5555555560d2 ">>> ") at ../readline.c:387
+#13 0x00005555555552d1 in main () at main.c:276
+```
 
 # Planned Features
 1. tab autocompletions (work in progress)
