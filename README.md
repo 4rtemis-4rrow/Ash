@@ -2,6 +2,8 @@
 Ash (pronounced as the word ash, short for arrow shell) is a simple lightweight linux shell written in C
 right now it's not yet ready for daily use, although if you are looking for something super lightweight but isn't /bin/sh, this is perfect for you
 
+NOTE: pretty much everything that follows is logs of what I'm working on/what I tried to fix bugs/what I managed to learn about them, this is so it's easier for anyone who wants to commit to this project
+
 # Known Bugs
 1. output redirection failed the only test I tried
    
@@ -16,6 +18,8 @@ right now it's not yet ready for daily use, although if you are looking for some
      I failed to trace it back using gdb, I am still trying to find it's source, but this is more advanced than my current skillset would allow
 
       after some tinkering with gdb, I managed to trace back the segfault to the FindMathces function, specifically in line 168, as of writing this, I need to go do something, I shall continue debugging when I'm free
+
+      I did find a bug in the implementation of the autocompletion, however it wasn't related to the segfault, the segfault is happening at the call of strstr, I checked that it's arguments were indeed of the correct type, and that they were null terminated
 
 # Planned Features
 1. tab autocompletions (work in progress)
